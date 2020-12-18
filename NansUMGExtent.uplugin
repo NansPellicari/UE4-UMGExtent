@@ -1,0 +1,30 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Nans UMG Extent",
+	"Description": "Basic UMG widgets",
+	"Category": "UMG",
+	"CreatedBy": "Nans Pellicari",
+	"CreatedByURL": "https://github.com/NansPellicari",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"EnabledByDefault": false,
+	"CanContainContent": false,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "NansUMGExtent",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "NansUE4Utilities",
+			"Enabled": true
+		}
+	]
+}
