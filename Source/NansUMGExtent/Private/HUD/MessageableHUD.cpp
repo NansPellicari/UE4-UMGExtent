@@ -20,12 +20,43 @@ void AMessageableHUD::BeginPlay()
 	MessageWidget = CreateWidget<UMessageableWidget>(GetWorld(), MessageWidgetClass);
 	MessageWidget->AddToViewport();
 	MessageWidget->SetVisibility(ESlateVisibility::Collapsed);
+	MessageWidget->OnNativeEndDisplayMessage().AddUObject(this, &AMessageableHUD::WhenEndDisplayMessage);
+}
+
+void AMessageableHUD::WhenEndDisplayMessage()
+{
+	if (bDebug == true) UE_LOG(
+		LogTemp,
+		Log,
+		TEXT("Message \"%s\" should not be displayed anymore"),
+		*CurrentMessage.Message.ToString()
+	);
+
+	CurrentMessage.Clear();
+	if (!MessagesQueues.IsEmpty())
+	{
+		CurrentMessage = MessagesQueues.GetMessage();
+
+		if (MessageWidget != nullptr)
+		{
+			if (bDebug == true) UE_LOG(
+				LogTemp,
+				Log,
+				TEXT("Message \"%s\" should be displayed"),
+				*CurrentMessage.Message.ToString()
+			);
+			Execute_SetMessage(MessageWidget, CurrentMessage);
+		}
+	}
+
+	if (CurrentMessage.Message.IsEmpty())
+	{
+		Execute_OnEndDisplayMessage(this);
+	}
 }
 
 void AMessageableHUD::SetMessage_Implementation(const FNFlashMessage& NewMessage)
 {
-	CurrentMessage.Clear();
-
 	FNFlashMessage MyNewMsg = NewMessage;
 
 	// This to avoid eternal message
@@ -35,6 +66,10 @@ void AMessageableHUD::SetMessage_Implementation(const FNFlashMessage& NewMessage
 	}
 
 	MessagesQueues.Add(MyNewMsg);
+	if (CurrentMessage.Message.IsEmpty())
+	{
+		WhenEndDisplayMessage();
+	}
 }
 
 void AMessageableHUD::ClearMessage_Implementation()
@@ -59,58 +94,13 @@ FText AMessageableHUD::GetMessageTxt()
 void AMessageableHUD::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	if (!CurrentMessage.Message.IsEmpty() || !MessagesQueues.IsEmpty())
-	{
-		DisplayMessage(DeltaSeconds);
-	}
 }
 
 void AMessageableHUD::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	MessageWidget->OnNativeEndDisplayMessage().RemoveAll(this);
 	MessageWidget->RemoveFromViewport();
 	MessageWidget = nullptr;
-}
-
-void AMessageableHUD::DisplayMessage(float DeltaSeconds)
-{
-	if (CurrentMessage.Message.IsEmpty() && !MessagesQueues.IsEmpty())
-	{
-		CurrentMessage = MessagesQueues.GetMessage();
-		CurrentMessage._TimeDisplayed = CurrentMessage.TimeDuration;
-		if (MessageWidget != nullptr)
-		{
-			Execute_SetMessage(MessageWidget, CurrentMessage);
-		}
-		if (bDebug == true) UE_LOG(
-			LogTemp,
-			Log,
-			TEXT("Message \"%s\" should be displayed"),
-			*CurrentMessage.Message.ToString()
-		);
-	}
-
-	if (CurrentMessage._TimeDisplayed > 0)
-	{
-		CurrentMessage._TimeDisplayed -= DeltaSeconds;
-	}
-
-	if (CurrentMessage.TimeDuration > 0 && CurrentMessage._TimeDisplayed <= 0)
-	{
-		if (bDebug == true) UE_LOG(
-			LogTemp,
-			Log,
-			TEXT("Message \"%s\" should not be displayed anymore"),
-			*CurrentMessage.Message.ToString()
-		);
-		CurrentMessage.Clear();
-		Execute_OnEndDisplayMessage(this);
-		if (MessageWidget != nullptr)
-		{
-			Execute_ClearMessage(MessageWidget);
-			Execute_OnEndDisplayMessage(MessageWidget);
-		}
-	}
 }
 
 
@@ -122,6 +112,7 @@ FFlashMessageEvent& AMessageableHUD::OnNativeEndDisplayMessage()
 
 void AMessageableHUD::OnEndDisplayMessage_Implementation()
 {
+	MessagesQueues.Clear();
 	OnEndDisplayMessageEvent.Broadcast();
 }
 

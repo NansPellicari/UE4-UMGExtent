@@ -26,8 +26,11 @@ class NANSUMGEXTENT_API AMessageableHUD : public AHUD, public INMessageable
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "HUD|Message")
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Message")
 	bool bDebug = false;
+
+	UFUNCTION()
+	void WhenEndDisplayMessage();
 
 	/**
 	 * Set a message to the player.
@@ -36,7 +39,7 @@ public:
 	virtual void ClearMessage_Implementation() override;
 	virtual FNFlashMessage GetMessage_Implementation() const override;
 
-	UFUNCTION(BlueprintCallable, Category = "HUD|Message")
+	UFUNCTION(BlueprintCallable, Category = "Message")
 	FText GetMessageTxt();
 
 	// BEGIN BP delegates management declaration for OnEndDisplayMessage
@@ -56,11 +59,11 @@ protected:
 	AMessageableHUD();
 
 	/** The class of User Widget to create and use for display message */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactive")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Message")
 	TSubclassOf<UMessageableWidget> MessageWidgetClass;
 
 	/** The User Widget object displayed and managed by this HUD to display message */
-	UPROPERTY(Transient, DuplicateTransient)
+	UPROPERTY(Transient, DuplicateTransient, BlueprintReadWrite, Category = "Message")
 	UMessageableWidget* MessageWidget;
 
 	// Called when the game starts or when spawned
@@ -71,5 +74,4 @@ private:
 	float MaxTimeDisplayed = 100.f;
 	FNFlashMessageList MessagesQueues;
 	FNFlashMessage CurrentMessage;
-	void DisplayMessage(float DeltaSeconds);
 };
