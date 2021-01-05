@@ -50,7 +50,7 @@ void UMessageableWidget::OnEndDisplayMessage_Implementation()
 FBPDelegateHandle UMessageableWidget::BindToOnEndDisplayMessage_Implementation(
 	const FEventForFlashMessageEvent& Functor)
 {
-	auto Delegate = TBaseDelegate<void>::CreateLambda(
+	auto Delegate = TDelegate<void()>::CreateLambda(
 		[Functor]()
 		{
 			Functor.ExecuteIfBound();

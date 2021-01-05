@@ -119,7 +119,7 @@ void AMessageableHUD::OnEndDisplayMessage_Implementation()
 FBPDelegateHandle AMessageableHUD::BindToOnEndDisplayMessage_Implementation(
 	const FEventForFlashMessageEvent& Functor)
 {
-	auto Delegate = TBaseDelegate<void>::CreateLambda(
+	auto Delegate = TDelegate<void()>::CreateLambda(
 		[Functor]()
 		{
 			Functor.ExecuteIfBound();
